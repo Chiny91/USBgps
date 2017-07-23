@@ -3,9 +3,15 @@
 # Import some modules
 import os       # Used for filer operations
 import rrdtool
-import serial
+import serial   # pip install pyserial
 import re       # Used for string searching
 import pynmea2
+
+# Each NMEA line begins with a '$' and ends with a carriage return/line feed sequence
+# and can be no longer than 80 characters of visible text (plus the line terminators)
+
+# Clobber the port (as root)
+# cu -l /dev/tty.usbmodem1431 -s 9600
 
 # Tested with gpsmon
 # /dev/tty.usbmodem1431 9600 8N1
@@ -16,9 +22,9 @@ port = serial.Serial("/dev/tty.usbmodem1431", 9600, timeout=0.5)
 # Go round loop forever
 while True:
 
-    # Get a line of data where emonTH line ends with ")"
+    # Get a line of NMEA data ending with "\n"
     response = ""
-    eol = ")"
+    eol = "\n"
     while True:
         if response.endswith(eol):
             break
@@ -33,17 +39,10 @@ while True:
     parameters = re.findall('\d+', response)
     
     # Do the sums
-    # https://community.openenergymonitor.org/t/emonth-data-output/3557/2
-    temperature = (int(parameters[1])+int(parameters[2])*256)/10.0
-    if temperature > 32768:
-        temperature = temperature - 65536
-    humidity = (int(parameters[5])+int(parameters[6])*256)/10.0
-    batteryvolts = (int(parameters[7])+int(parameters[8])*256)/10.0
-    rssi = -int(parameters[13])
+
     
     # Test everything
-    import datetime
-    print (datetime.datetime.now()), temperature, humidity, batteryvolts, rssi
+    print response
     
     # Flush serial buffer
     # port.flushInput()
