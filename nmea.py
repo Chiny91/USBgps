@@ -1,16 +1,11 @@
 #!/usr/bin/python
 
 # Import some modules
-import os       # Used for filer operations
-import rrdtool
 import serial   # pip install pyserial
-import re       # Used for string searching
-import pynmea2
+import pynmea2  # https://github.com/Knio/pynmea2
+import re       # used for string searching
 
-# Each NMEA line begins with a '$' and ends with a carriage return/line feed sequence
-# and can be no longer than 80 characters of visible text (plus the line terminators)
-
-# Clobber the port (as root)
+# To reset, clobber the port (as root)
 # cu -l /dev/tty.usbmodem1431 -s 9600
 
 # Tested with gpsmon
@@ -31,18 +26,18 @@ while True:
         else:
             response += port.read(1)
             
-    # Remove first and last characters which may be junk,
-    # using Python's slice notation
+    # Remove initial ($) and last (\n) characters using Python's slice notation
     response = response[1:-1]
     
     # Break up data into individual parameters
     parameters = re.findall('\d+', response)
     
-    # Do the sums
-
+    # Extract the data
+    # messagetype  = parameters(1)
     
     # Test everything
     print response
+    print parameters
     
     # Flush serial buffer
     # port.flushInput()
