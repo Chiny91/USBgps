@@ -1,7 +1,7 @@
 #!/usr/bin/python
 
-# Import some modules
-import serial   # pip install pyserial
+# Import some modules, use pip install
+import serial   # pyserial
 import pynmea2  # https://github.com/Knio/pynmea2
 
 # To reset, clobber the port (as root)
@@ -25,7 +25,7 @@ while True:
         else:
             response += port.read(1)
 
-    # Print everything
+    # Print info
     msg = pynmea2.parse(response)
     try:
         if msg.sentence_type == "GGA":
@@ -35,12 +35,13 @@ while True:
             print msg.lon, msg.lon_dir
             print "Number of satellites", msg.num_sats
             print msg.altitude, msg.altitude_units
-            break
+            stuff = window.refresh()
+        elif msg.sentence_type == "TXT":
+            print msg.text
+        else:
+            pass
     except:
         pass
-
-    # Flush serial buffer
-    # port.flushInput()
 
 # Python appears to need a line with same indent as the program start
 raise SystemExit

@@ -1,3 +1,6 @@
+https://github.com/Knio/pynmea2/blob/master/test/test_types.py
+
+
 print msg.sentence_type
             print response
             print msg.lat
