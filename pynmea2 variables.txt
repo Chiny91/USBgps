@@ -1,0 +1,16 @@
+print msg.sentence_type
+            print response
+            print msg.lat
+            print msg.lat_dir
+            print msg.lon
+            print msg.lon_dir
+            print msg.timestamp
+            print msg.gps_qual
+            print msg.num_sats
+            print msg.horizontal_dil
+            print msg.altitude
+            print msg.altitude_units
+            print msg.geo_sep
+            print msg.geo_sep_units
+            print msg.age_gps_data
+            print msg.ref_station_id

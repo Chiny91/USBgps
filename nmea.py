@@ -3,7 +3,6 @@
 # Import some modules
 import serial   # pip install pyserial
 import pynmea2  # https://github.com/Knio/pynmea2
-import re       # used for string searching
 
 # To reset, clobber the port (as root)
 # cu -l /dev/tty.usbmodem1431 -s 9600
@@ -25,20 +24,21 @@ while True:
             break
         else:
             response += port.read(1)
-            
-    # Remove initial ($) and last (\n) characters using Python's slice notation
-    response = response[1:-1]
-    
-    # Break up data into individual parameters
-    parameters = re.findall('\d+', response)
-    
-    # Extract the data
-    # messagetype  = parameters(1)
-    
-    # Test everything
-    print response
-    print parameters
-    
+
+    # Print everything
+    msg = pynmea2.parse(response)
+    try:
+        if msg.sentence_type == "GGA":
+            print response
+            print msg.timestamp
+            print msg.lat, msg.lat_dir
+            print msg.lon, msg.lon_dir
+            print "Number of satellites", msg.num_sats
+            print msg.altitude, msg.altitude_units
+            break
+    except:
+        pass
+
     # Flush serial buffer
     # port.flushInput()
 
