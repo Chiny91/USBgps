@@ -1,47 +1,45 @@
 #!/usr/bin/python
 
-# Import some modules, use pip install
+# Import some modules, use pip install <module> if missing
+import curses
 import serial   # pyserial
 import pynmea2  # https://github.com/Knio/pynmea2
+import sys
 
-# To reset, clobber the port (as root)
-# cu -l /dev/tty.usbmodem1431 -s 9600
-
-# Tested with gpsmon
-# /dev/tty.usbmodem1431 9600 8N1
-
-# Set up the USB (serial) port
-port = serial.Serial("/dev/tty.usbmodem1431", 9600, timeout=0.5)
-
-# Go round loop forever
-while True:
-
-    # Get a line of NMEA data ending with "\n"
-    response = ""
-    eol = "\n"
+def main(stdscr):
+    curses.start_color()
+    curses.use_default_colors()
+    for i in range(0, curses.COLORS):
+        curses.init_pair(i + 1, i, -1)
+    # Set up the USB (serial) port
+    port = serial.Serial("/dev/tty.usbmodem1431", 4800, timeout = None)
     while True:
-        if response.endswith(eol):
-            break
-        else:
-            response += port.read(1)
-
-    # Print info
-    msg = pynmea2.parse(response)
-    try:
-        if msg.sentence_type == "GGA":
-            print response
-            print msg.timestamp
-            print msg.lat, msg.lat_dir
-            print msg.lon, msg.lon_dir
-            print "Number of satellites", msg.num_sats
-            print msg.altitude, msg.altitude_units
-            stuff = window.refresh()
-        elif msg.sentence_type == "TXT":
-            print msg.text
-        else:
+        try:
+            response = port.readline()   # read a '\n' terminated line
+            msg = pynmea2.parse(response)
+            if msg.sentence_type == "GGA":
+                stdscr.addstr(0, 0, str(msg.timestamp), curses.color_pair(2))
+                stdscr.addstr(1, 3, msg.lat, curses.color_pair(1))
+                stdscr.addstr(1, 0, msg.lat_dir, curses.color_pair(1))
+                stdscr.addstr(2, 3, msg.lon, curses.color_pair(1))
+                stdscr.addstr(2, 0, msg.lon_dir, curses.color_pair(1))
+                stdscr.addstr(3, 0, "Altitude", curses.color_pair(1))
+                stdscr.addstr(3, 9, str(msg.altitude), curses.color_pair(1))
+                stdscr.addstr(3, 14, msg.altitude_units, curses.color_pair(1))
+                stdscr.addstr(4, 0, "Number of satellites", curses.color_pair(2))
+                stdscr.addstr(4, 21, msg.num_sats, curses.color_pair(2))
+                stdscr.addstr(5, 0, "", curses.color_pair(1))
+                stdscr.refresh()
+        except ParseError:    # Ignore any errors from pynmea2
             pass
-    except:
-        pass
+        except:
+            print "Unexpected error:", sys.exc_info()[0]
+            raise
 
-# Python appears to need a line with same indent as the program start
+# Initialize curses and call another function,
+# which is the rest of curses-using application,
+# then gracefully exit curses and tidy up terminal
+curses.wrapper(main)
+
+# Exit Python
 raise SystemExit
